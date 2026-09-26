@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>One Question</title>
+<style>
+  :root {
+    --ink: #1c1a17;
+    --paper: #e9e4d8;
+    --paper-warm: #ddd5c2;
+    --accent: #7a3b2e;
+    --rule: rgba(28,26,23,0.18);
+    color-scheme: light dark;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #eae5d9;
+      --paper: #17140f;
+      --paper-warm: #1f1a13;
+      --accent: #d98f6f;
+      --rule: rgba(234,229,217,0.18);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #eae5d9;
+    --paper: #17140f;
+    --paper-warm: #1f1a13;
+    --accent: #d98f6f;
+    --rule: rgba(234,229,217,0.18);
+  }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  body {
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100%;
+    padding: 2rem 1.25rem;
+    transition: background 0.4s ease, color 0.4s ease;
+  }
+
+  .frame {
+    width: 100%;
+    max-width: 640px;
+    text-align: center;
+  }
+
+  .kicker {
+    font-family: "Courier New", ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    margin-bottom: 1.75rem;
+    opacity: 0.85;
+  }
+
+  .question {
+    font-size: clamp(1.5rem, 4.6vw, 2.35rem);
+    line-height: 1.32;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+    margin: 0 auto 2.5rem;
+    max-width: 30ch;
+    min-height: 4.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.35s ease;
+  }
+
+  .question.fade { opacity: 0; }
+
+  .rule {
+    width: 46px;
+    height: 1px;
+    background: var(--rule);
+    margin: 0 auto 2.25rem;
+  }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+  }
+
+  button {
+    font-family: inherit;
+    font-size: 0.95rem;
+    letter-spacing: 0.01em;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 0.65rem 1.6rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  button:hover {
+    border-color: var(--accent);
+  }
+
+  button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  .count {
+    font-family: "Courier New", ui-monospace, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+    opacity: 0.45;
+    margin-top: 2.25rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .question, body { transition: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="frame">
+    <div class="kicker">a question, not an assignment</div>
+    <div class="question" id="question">Loading —</div>
+    <div class="rule"></div>
+    <div class="controls">
+      <button id="next">Another question</button>
+    </div>
+    <div class="count" id="count"></div>
+  </div>
+
+<script>
+  const questions = [
+    "Is a promise still real if no one remembers making it?",
+    "If you forgot every reason you believe something, would you still believe it?",
+    "Does a word mean anything if only one person has ever used it?",
+    "Can you regret a decision you'd make the same way again?",
+    "Is it possible to lie to yourself, or only to try?",
+    "If a habit outlives the reason you started it, is it still yours?",
+    "Does forgiving someone change the past, or only your relationship to it?",
+    "Can you know your own motives, or only the story you tell about them?",
+    "Is a tradition worth keeping once no one remembers why it started?",
+    "If no one ever found out, would it still matter that you did it?",
+    "Can something be true for you and false for someone else at the same time?",
+    "Is silence ever really neutral?",
+    "Does a language shape what you're able to think, or just what you can say?",
+    "If you changed every opinion you hold, would you still be you?",
+    "Can you owe something to a version of yourself that no longer exists?",
+    "Is curiosity about a person different from curiosity about an idea?",
+    "Does a rule you never break still count as a rule, or is it just a fact about you?",
+    "If everyone forgot an injustice happened, would it stop mattering?",
+    "Can you actually choose what to want, or only what to do about wanting it?",
+    "Is a copy of something ever the same thing, or always just close?",
+    "Does intention matter if the outcome is identical either way?",
+    "Can you fully understand a mistake while you're still making it?",
+    "Is patience a virtue, or just fear dressed up as restraint?",
+    "If a memory is wrong, is it still yours?",
+    "Does explaining a joke destroy it, or just relocate where the humor lives?",
+    "Can two people disagree about a fact and both be reasoning correctly?",
+    "Is it possible to want two incompatible things equally?",
+    "Does a belief you've never tested count as a belief, or just a guess you trust?",
+    "If you could undo one decision with no other consequences, would you still be tempted?",
+    "Is boredom the absence of meaning, or just the absence of noise?"
+  ];
+
+  const el = document.getElementById('question');
+  const countEl = document.getElementById('count');
+  const btn = document.getElementById('next');
+  let seen = [];
+
+  function loadSeen() {
+    try {
+      const raw = localStorage.getItem('oneQuestion.seen');
+      seen = raw ? JSON.parse(raw) : [];
+    } catch (e) { seen = []; }
+  }
+
+  function saveSeen() {
+    try { localStorage.setItem('oneQuestion.seen', JSON.stringify(seen)); }
+    catch (e) { /* storage unavailable, continue without persistence */ }
+  }
+
+  function pickIndex() {
+    if (seen.length >= questions.length) seen = [];
+    let idx;
+    do { idx = Math.floor(Math.random() * questions.length); }
+    while (seen.includes(idx) && seen.length < questions.length);
+    return idx;
+  }
+
+  function showNext() {
+    el.classList.add('fade');
+    setTimeout(() => {
+      const idx = pickIndex();
+      seen.push(idx);
+      saveSeen();
+      el.textContent = questions[idx];
+      countEl.textContent = seen.length + ' asked so far';
+      el.classList.remove('fade');
+    }, 220);
+  }
+
+  loadSeen();
+  showNext();
+  btn.addEventListener('click', showNext);
+</script>
+</body>
+</html>
